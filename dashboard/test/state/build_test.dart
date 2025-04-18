@@ -716,7 +716,7 @@ void main() {
       mockSignIn.authStateChanges(),
     ).thenAnswer((_) => const Stream<User>.empty());
     when(
-      mockSignIn.signInWithPopup(any),
+      mockSignIn.signInWithProvider(any),
     ).thenAnswer((_) async => MockUserCredential());
     when(mockSignIn.signOut()).thenAnswer((_) async {});
     final mockCocoonService = MockCocoonService();

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dashboard/service/firebase_auth.dart';
 import 'package:flutter_dashboard/widgets/state_provider.dart';
 import 'package:flutter_dashboard/widgets/user_sign_in.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_sign_in/widgets.dart';
 import 'package:mockito/mockito.dart';
 
 import '../utils/fake_firebase_user.dart';
@@ -44,7 +44,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byType(UserAvatar), findsNothing);
+    expect(find.byType(GoogleUserCircleAvatar), findsNothing);
     expect(find.text('SIGN IN'), findsOneWidget);
     expect(find.text('test@flutter.dev'), findsNothing);
     await expectGoldenMatches(

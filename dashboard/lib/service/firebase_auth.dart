@@ -48,7 +48,6 @@ class FirebaseAuthService extends ChangeNotifier {
     if (idToken == null || idToken.isEmpty) {
       throw StateError('invalid idToken');
     }
-    GoogleAuthProvider();
 
     return idToken;
   }
@@ -56,9 +55,7 @@ class FirebaseAuthService extends ChangeNotifier {
   /// Initiate the Google Sign In process.
   Future<void> signIn() async {
     try {
-      final googleProvider = GoogleAuthProvider();
-      googleProvider.setCustomParameters({'login_hint': 'user@example.com'});
-      await _auth.signInWithPopup(googleProvider);
+      await _auth.signInWithProvider(GoogleAuthProvider());
       notifyListeners();
     } catch (error) {
       debugPrint('signin failed: $error');

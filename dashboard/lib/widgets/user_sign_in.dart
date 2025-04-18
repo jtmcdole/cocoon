@@ -4,9 +4,10 @@
 
 import 'dart:io';
 
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 
 import '../service/firebase_auth.dart';
@@ -55,7 +56,9 @@ class UserSignIn extends StatelessWidget {
                     child: Text(authService.user?.email ?? 'user@example.com'),
                   );
                 }
-                return const UserAvatar();
+                return GoogleUserCircleAvatar(
+                  identity: FirebaseUserIdentity(authService.user!),
+                );
               },
             ),
           );
@@ -64,4 +67,26 @@ class UserSignIn extends StatelessWidget {
       },
     );
   }
+}
+
+class FirebaseUserIdentity implements GoogleIdentity {
+  FirebaseUserIdentity(this.user);
+
+  final User user;
+
+  @override
+  String? get displayName => user.displayName;
+
+  @override
+  String get email => user.email!;
+
+  @override
+  String get id => '1234';
+
+  @override
+  // TODO: implement photoUrl
+  String? get photoUrl => user.photoURL;
+
+  @override
+  String? get serverAuthCode => '';
 }

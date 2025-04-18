@@ -2,20 +2,53 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
+// import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
+import 'package:google_sign_in_web/google_sign_in_web.dart';
 
-import '../../consts/client_id.dart';
+// import '../../consts/client_id.dart';
 
 /// Widget that users can click to initiate the Sign In process.
-class SignInButton extends StatelessWidget {
+class SignInButton extends StatefulWidget {
   const SignInButton({super.key});
 
   @override
+  State<StatefulWidget> createState() => _SignInButtonState();
+}
+
+class _SignInButtonState extends State<SignInButton> {
+  late GoogleSignInPlugin _googleSignInPlugin;
+
+  @override
+  void initState() {
+    super.initState();
+    _googleSignInPlugin = GoogleSignInPlatform.instance as GoogleSignInPlugin;
+
+    () async {
+      await GoogleSignInPlatform.instance.initWithParams(
+        const SignInInitParameters(scopes: []),
+      );
+      GoogleSignInPlatform.instance.userDataEvents!.listen((data) async {
+        if (data != null) {
+          final auth = FirebaseAuth.instance;
+          final credential = GoogleAuthProvider.credential(
+            idToken: data.idToken,
+          );
+          try {
+            final cred = await auth.signInWithCredential(credential);
+            print('${cred.user?.email} signed in');
+          } catch (e) {
+            print('error signing into firebase');
+          }
+        }
+      });
+    }();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const GoogleSignInButton(
-      loadingIndicator: CircularProgressIndicator(),
-      clientId: signInClientId,
-    );
+    return _googleSignInPlugin.renderButton();
   }
 }
