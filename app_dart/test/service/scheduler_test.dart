@@ -44,6 +44,7 @@ import '../src/utilities/mocks.dart';
 import '../src/utilities/webhook_generators.dart';
 import 'scheduler/ci_yaml_strings.dart';
 import 'scheduler/create_check_run.dart';
+import 'scheduler/pr_strings.dart';
 
 void main() {
   useTestLoggerPerTest();
@@ -410,12 +411,25 @@ void main() {
 
       // Regression test for https://github.com/flutter/flutter/issues/168738.
       test('experimental branches build the engine, skip tests', () async {
-        ciYamlFetcher.setCiYamlFrom(otherBranchCiYaml, engine: fusionCiYaml);
-
-        final mergedPr = generatePullRequest(
-          repo: 'flutter',
-          branch: 'ios-experimental',
+        ciYamlFetcher.totCiYaml = FakeCiYamlFetcher.ciYamlSetFromStrings(
+          realToTFlutterCiYaml,
+          engine: realToTEngineCiYaml,
         );
+        ciYamlFetcher.setCiYamlFrom(
+          experimentalFlutterCiYaml,
+          branch: 'ios-experimental',
+          engine: experimentalEngineCiYaml,
+          totCiYaml: ciYamlFetcher.totCiYaml,
+        );
+
+        final mergedPr = PullRequest.fromJson(
+          iosExperimentalPrClosed['pull_request'] as Map<String, Object?>,
+        );
+
+        // final mergedPr = generatePullRequest(
+        //   repo: 'flutter',
+        //   branch: 'ios-experimental',
+        // );
         await scheduler.addPullRequest(mergedPr);
 
         expect(
@@ -423,12 +437,13 @@ void main() {
           existsInStorage(fs.Commit.metadata, [
             isCommit
                 .hasRepositoryPath('flutter/flutter')
-                .hasSha('abc')
+                .hasSha('1d0525e74e2680e4cd7149011b3ed76ac598047d')
                 .hasBranch('ios-experimental')
-                .hasCreateTimestamp(1)
-                .hasAuthor('dash')
-                .hasAvatar('dashatar')
-                .hasMessage('example message'),
+                .hasCreateTimestamp(1748019596000)
+                .hasAuthor('matanlurey')
+                .hasMessage(
+                  'Force `ios-experimental` to rebuild in postsubmit.',
+                ),
           ]),
         );
 
@@ -437,22 +452,24 @@ void main() {
           existsInStorage(
             fs.Task.metadata,
             unorderedEquals([
-              // release_build: "true"
+              // new
               isTask
-                  .hasTaskName('Linux engine_build')
-                  .hasStatus(TaskStatus.waitingForBackfill),
+                  .hasTaskName('Mac build_ios_framework_module_test')
+                  .hasStatus(TaskStatus.skipped),
 
               // engine tests based on engine build
               isTask
-                  .hasTaskName('Linux engine_presubmit')
-                  .hasStatus(TaskStatus.skipped),
+                  .hasTaskName('Linux linux_host_engine')
+                  .hasStatus(TaskStatus.waitingForBackfill),
               isTask
-                  .hasTaskName('Linux runIf engine')
-                  .hasStatus(TaskStatus.skipped),
-              isTask.hasTaskName('Linux Z').hasStatus(TaskStatus.skipped),
-
-              // framework tests based on engine build
-              isTask.hasTaskName('Linux A').hasStatus(TaskStatus.skipped),
+                  .hasTaskName('Linux linux_android_debug_engine')
+                  .hasStatus(TaskStatus.waitingForBackfill),
+              isTask
+                  .hasTaskName('Mac mac_host_engine')
+                  .hasStatus(TaskStatus.waitingForBackfill),
+              isTask
+                  .hasTaskName('Mac mac_ios_engine')
+                  .hasStatus(TaskStatus.waitingForBackfill),
             ]),
           ),
         );

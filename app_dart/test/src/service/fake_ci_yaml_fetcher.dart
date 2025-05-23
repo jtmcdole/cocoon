@@ -30,10 +30,31 @@ final class FakeCiYamlFetcher implements CiYamlFetcher {
   /// Sets [ciYaml] by loading a YAML document.
   ///
   /// Optionally may also specify [engine] for a fusion [CiYamlSet].
-  void setCiYamlFrom(String root, {String? engine}) {
-    ciYaml = CiYamlSet(
-      slug: Config.flutterSlug,
-      branch: 'will-be-replaced',
+  void setCiYamlFrom(
+    String root, {
+    String? engine,
+    String? branch,
+    CiYamlSet? totCiYaml,
+  }) {
+    ciYaml = ciYamlSetFromStrings(
+      root,
+      engine: engine,
+      branch: branch,
+      totCiYaml: totCiYaml,
+    );
+  }
+
+  static CiYamlSet ciYamlSetFromStrings(
+    String root, {
+    RepositorySlug? slug,
+    String? branch,
+    String? engine,
+    CiYamlSet? totCiYaml,
+  }) {
+    return CiYamlSet(
+      slug: slug ?? Config.flutterSlug,
+      branch: branch ?? 'master',
+      totConfig: totCiYaml,
       yamls: {
         CiType.any: pb.SchedulerConfig()..mergeFromProto3Json(loadYaml(root)),
         if (engine != null)
@@ -64,6 +85,7 @@ final class FakeCiYamlFetcher implements CiYamlFetcher {
     return CiYamlSet(
       slug: commit.slug,
       branch: commit.branch,
+      totConfig: totCiYaml,
       yamls: ci.configs.map((k, v) => MapEntry(k, v.config)),
     );
   }

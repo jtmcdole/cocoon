@@ -125,7 +125,7 @@ class CiYaml {
     }
     // Do not filter bringup targets. They are required for backward compatibility
     // with release candidate branches.
-    final totTargets = totConfig?._targets ?? <Target>[];
+    final totTargets = [...?totConfig?._targets];
     final totEnabledTargets = _filterEnabledTargets(totTargets);
     totTargetNames =
         totEnabledTargets.map((Target target) => target.name).toList();
